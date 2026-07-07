@@ -139,23 +139,40 @@ parameters.
 
 ### Aviasales
 
-FareSprint may generate a direct Aviasales link only after its current URL
-format is verified in a normal browser.
+Aviasales uses a direct multi-city search path. Every segment is encoded as
+`ORIGIN + DDMM + DESTINATION`, segments are joined with `-`, and the passenger
+count is appended to the final segment:
 
-If full prefilling is unreliable, the Aviasales action:
+```text
+https://www.aviasales.ru/search/MOW0810OSA-TYO27102
+```
 
-1. copies a compact route/date summary to the clipboard;
-2. opens the Aviasales multi-city form in a new tab;
-3. marks the action as `Open + copy`, not as fully prefilled.
-
-FareSprint must not claim that a provider is prefilled when it is not.
+When the last segment returns to the first segment's origin, Aviasales omits
+that final destination from the path. The path reliably represents routes,
+dates, passengers, and economy class. Tracking and ticket-subscription query
+parameters are not copied. For non-economy cabins the adapter is `partial`: it
+opens the route and copies the full request so the cabin can be selected
+manually.
 
 ### T-Bank Travel
 
-T-Bank follows the same capability rule as Aviasales. A direct link is used
-only if the public URL reliably preserves all route segments and dates.
+T-Bank uses a verified direct multi-city URL. Segments and `MM-DD` dates are
+encoded as alternating path components:
 
-Otherwise the action opens the flight search and copies the route/date summary.
+```text
+https://www.tbank.ru/travel/flights/multi-way/
+  MOW-OSA/10-12/
+  TYO-MOW/10-31/
+  ?adults=1
+  &children=0
+  &infants=0
+  &cabin=Y
+  &composite=1
+```
+
+The actual URL contains no whitespace. Passenger count maps to `adults`;
+children and infants remain zero in the MVP. Cabin maps to the provider's
+uppercase code.
 
 ## Provider Capability Model
 
@@ -264,4 +281,3 @@ The following are deliberately postponed:
 - manual price-entry fields;
 - cheapest-price highlighting;
 - browser extension autofill.
-
